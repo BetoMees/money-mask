@@ -29,7 +29,7 @@ Use `addThousand="false"` to disable Thousand point `default:true`.
 <input type="text" [(ngModel)]="price" money [addThousand]="false" />
 ```
 
-Use `inputDefault="number"` to set default value when the input is clean.
+Use `inputDefault="number"` to set default value when the input is clean `default:null`.
 ```html
 <input type="text" [(ngModel)]="price" money inputDefault="0" />
 ```
