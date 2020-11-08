@@ -39,7 +39,7 @@ Use `decimalMarker="string"` to set decimal marker `default:","`.
 <input type="text" [(ngModel)]="price" decimalMarker="." />
 ```
 
-Use `thousandMarker="string"` to set decimal marker `default:"."`.
+Use `thousandMarker="string"` to set thousand marker `default:"."`.
 ```html
 <input type="text" [(ngModel)]="price" thousandMarker="," />
 ```
