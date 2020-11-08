@@ -10,6 +10,8 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 export class MoneyDirective {
   private MASK: string;
   private _decimal: number;
+  private _decimalMarker = ',';
+  private _thousandMarker = '.';
   private _type: string;
   private _inputValue: string;
   private _inputDefault = null;
@@ -18,6 +20,14 @@ export class MoneyDirective {
   private _isNegative = false;
   private _inputRef: ElementRef;
   private _addThousand = true;
+
+  @Input() public set decimalMarker(value: string) {
+    this._decimalMarker = typeof value === 'string' ? value : ',';
+  }
+
+  @Input() public set thousandMarker(value: string) {
+    this._thousandMarker = typeof value === 'string' ? value : '.';
+  }
 
   @Input() public set inputDefault(value: string) {
     this._inputDefault = typeof value === 'string' ? value : null;
@@ -70,13 +80,13 @@ export class MoneyDirective {
       if (e.data === '-' || e.data === '+') {
         this._isNegative = e.data === '-' ? !this._isNegative : false;
       } else if (!isNaN(parseInt(e.data)) || e.data == null) {
-        this._inputValue = this.set(this.checkNegative(el.value));
+        this._inputValue = this.set(this.removeChars(el.value));
       }
       this.init();
 
       // if pasted input
     } else if (data?.length >= 1) {
-      this._inputValue = this.set(this.checkNegative(this.removeChars(el.value)));
+      this._inputValue = this.removeChars(el.value);
       this.init();
 
       // invalid input has no change
@@ -100,10 +110,14 @@ export class MoneyDirective {
     if (inputValue === undefined || inputValue === null) {
       this._inputValue = this.set(null);
     } else {
-      inputValue = this.removeChars(inputValue);
+      if (typeof inputValue === 'number') {
+        inputValue = String(inputValue);
+      }
       inputValue = this.checkNegative(inputValue);
-      this._inputValue = this.set(this.toFixed(inputValue));
+      inputValue = this.removeChars(inputValue);
+      this._inputValue = this.set(inputValue);
     }
+
     this.init(false);
   }
 
@@ -130,22 +144,22 @@ export class MoneyDirective {
   private checkNegative(inputValue: string): string {
     this._isNegative = inputValue?.indexOf('-') === 0;
 
-    return this.removeHyphen(inputValue);
+    return inputValue ? inputValue.replaceAll('-', '') : null;
   }
 
   private makeNegative(inputValue: string): string {
-    return this._isNegative && this._canNegative && parseFloat(inputValue.replace(',', '.')) != 0
+    return this._isNegative && this._canNegative && parseFloat(this.removeChars(inputValue)) != 0
       ? '-'.concat(inputValue)
       : inputValue;
   }
 
   public makeClean(inputValue: string): string {
-    return this.removeHyphen(this.removeDots(this.removeChars(inputValue)));
+    return this.removeDots(this.removeChars(inputValue));
   }
 
   private toFixed(inputValue: string): string {
     const value = parseFloat(inputValue);
-    return isNaN(value) ? null : value.toFixed(this._decimal).replace('.', ',');
+    return isNaN(value) ? null : value.toFixed(this._decimal).replace('.', this._decimalMarker);
   }
 
   private applyMask(inputValue: string): string {
@@ -158,7 +172,6 @@ export class MoneyDirective {
       inputValue = this.MASK.substring(0, pos).concat(inputValue);
       return inputValue;
     }
-
     inputValue = this.toFixed(inputValue);
     inputValue = this.applyThousandMask(inputValue);
     return inputValue;
@@ -175,47 +188,35 @@ export class MoneyDirective {
   private applyThousandMask(inputValue: string): string {
     if (this._addThousand) {
       if (this._decimal == 0) {
-        inputValue = this.applyHundreds(inputValue);
+        inputValue = this.applyMarker(inputValue);
       } else {
-        const decimal = inputValue.split(',');
+        const decimal = inputValue.split(this._decimalMarker);
         if (decimal.length > 1 && decimal[0].length > 3) {
-          inputValue = this.applyHundreds(decimal[0]);
-          return inputValue.concat(',', decimal[1]);
+          inputValue = this.applyMarker(decimal[0]);
+          return inputValue.concat(this._decimalMarker, decimal[1]);
         }
       }
     }
     return inputValue;
   }
 
-  private applyHundreds(inputValue: string): string {
+  private applyMarker(inputValue: string): string {
     if (inputValue.length > 3) {
       const pos = inputValue.length - 3;
       const Thousand = inputValue.substring(0, pos);
       const Hundreds = inputValue.substring(pos, inputValue.length);
-      return this.applyHundreds(Thousand).concat('.', Hundreds);
+      return this.applyMarker(Thousand).concat(this._thousandMarker, Hundreds);
     }
     return inputValue;
   }
 
   public removeDots(inputValue: string): string {
-    return inputValue ? inputValue.replaceAll('.', '').replaceAll(',', '') : null;
+    return inputValue ? inputValue.replaceAll('.', '') : null;
   }
 
-  public removeHyphen(inputValue: string): string {
-    return inputValue ? inputValue.replaceAll('-', '') : null;
-  }
-
-  public removeChars(inputValue: string | number): string {
-    if (typeof inputValue === 'number') {
-      return String(inputValue);
-    }
+  public removeChars(inputValue: string): string {
     for (let i = inputValue?.length; i >= 0; i--) {
-      if (
-        isNaN(parseInt(inputValue[i])) &&
-        inputValue[i] != '.' &&
-        inputValue[i] != ',' &&
-        inputValue[i] != '-'
-      ) {
+      if (isNaN(parseInt(inputValue[i])) && inputValue[i] != '.') {
         inputValue = inputValue.replace(inputValue[i], '');
       }
     }

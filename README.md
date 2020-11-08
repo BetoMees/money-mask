@@ -33,3 +33,13 @@ Use `inputDefault="number"` to set default value when the input is clean `defaul
 ```html
 <input type="text" [(ngModel)]="price" money inputDefault="0" />
 ```
+
+Use `decimalMarker="string"` to set decimal marker `default:","`.
+```html
+<input type="text" [(ngModel)]="price" decimalMarker="." />
+```
+
+Use `thousandMarker="string"` to set decimal marker `default:"."`.
+```html
+<input type="text" [(ngModel)]="price" thousandMarker="," />
+```
