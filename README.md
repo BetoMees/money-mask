@@ -14,11 +14,6 @@ Use `money="number"` to set decimal digit count `default:2`.
 <input type="text" [(ngModel)]="price" money="3" />
 ```
 
-Use `money="amount"` to set the **amount** optional with no decimal point.
-```html
-<input type="text" [(ngModel)]="amount" money="amount" />
-```
-
 Use `negative="true"` to enable negavive numbers `default:false`.
 ```html
 <input type="text" [(ngModel)]="price" money [negative]="true" />
