@@ -104,7 +104,9 @@ export class MoneyDirective {
     if (inputValue === undefined || inputValue === null) {
       this._inputValue = this.set(null);
       if (this._inputValue != null) {
-        this.onChange(this._inputValue);
+        this.init();
+      } else {
+        this._inputRef.nativeElement.value = this._inputValue;
       }
     } else {
       if (typeof inputValue === 'number') {
